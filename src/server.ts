@@ -12,11 +12,20 @@ const requestListener = (req, res) => {
   // console.log(URL);
 
   if (method === "GET" && URL.pathname === "/") {
+    res.statusCode = 200;
     res.end(`${"Home"}`);
   }
   if (method === "GET" && URL.pathname === "/api/users") {
+    // res.end(`${method} --- ${URL.pathname}`);
     const users = userService.getAllUsers();
-    res.end(`${method} --- ${URL.pathname}`);
+    const strUsers = JSON.stringify(users);
+    res.statusCode = 200;
+    res.end(strUsers);
+    try {
+    } catch (error: any) {
+      res.statusCode = 400;
+      return res.end(`error: ${error.message}`);
+    }
   }
   let body: any[] = [];
   req
