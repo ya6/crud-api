@@ -13,3 +13,6 @@ console.log('Executing function');
 
 const decoratedFunction = myDecorator(myFunction);
 decoratedFunction();
+
+steam body
+https://nodejs.dev/en/api/v18/stream/
