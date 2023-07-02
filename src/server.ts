@@ -1,10 +1,11 @@
 import http from "http";
 import { parse } from "url";
 import { UserService } from "./service";
+import "dotenv/config";
 
 //
 const userService = new UserService();
-const PORT = 4000;
+const PORT = process.env.PORT;
 const requestListener = (req, res) => {
   const { method, url } = req;
   const URL = parse(url, true);
@@ -16,22 +17,33 @@ const requestListener = (req, res) => {
   // get /
   if (method === "GET" && URL.pathname === "/") {
     res.statusCode = 200;
-    res.end(`${"Home"}`);
+    res.setHeader("content-type", "text/html");
+    return res.end(`
+    <div style="margin: 3rem">
+      <h2>Crud API</h3>
+      <h3>Endpoints:</h4>
+      <p><b>GET</b> api/users</p>
+      <p><b>GET</b> api/users/{userId}</p>
+      <p><b>POST</b> api/users</p>
+      <p><b>PUT</b> api/users/{userId}</p>
+      <p><b>DELETE</b> api/users/{userId}</p>
+    </div>
+    `);
   }
   // get/api/users
-  if (method === "GET" && URL.pathname === "/api/users") {
+  else if (method === "GET" && URL.pathname === "/api/users") {
     const users = userService.getAllUsers();
     const strUsers = JSON.stringify(users);
     res.statusCode = 200;
     res.end(strUsers);
     try {
     } catch (error: any) {
-      res.statusCode = 400;
+      res.statusCode = 500;
       return res.end(`error: ${error.message}`);
     }
   }
   // get/api/users/id
-  if (method === "GET" && segmented_pathname[1] === "api" && segmented_pathname[2] === "users" && !!segmented_pathname[3]) {
+  else if (method === "GET" && segmented_pathname[1] === "api" && segmented_pathname[2] === "users" && !!segmented_pathname[3]) {
     const checkedId = userService.validateId(segmented_pathname[3]);
     if (checkedId === "invalid") {
       res.statusCode = 400;
@@ -45,9 +57,7 @@ const requestListener = (req, res) => {
     }
     res.statusCode = 404;
     return res.end(`user doesn't exist`);
-  }
-
-  if (method === "POST" && URL.pathname === "/api/users") {
+  } else if (method === "POST" && URL.pathname === "/api/users") {
     let body: any[] = [];
     req
       .on("data", (chank) => {
@@ -68,12 +78,11 @@ const requestListener = (req, res) => {
           res.statusCode = 201;
           return res.end(JSON.stringify(user));
         } catch (error: any) {
-          res.statusCode = 400;
+          res.statusCode = 500;
           return res.end(`error: ${error.message}`);
         }
       });
-  }
-  if (method === "PUT" && segmented_pathname[1] === "api" && segmented_pathname[2] === "users" && !!segmented_pathname[3]) {
+  } else if (method === "PUT" && segmented_pathname[1] === "api" && segmented_pathname[2] === "users" && !!segmented_pathname[3]) {
     let body: any[] = [];
     req
       .on("data", (chank) => {
@@ -103,12 +112,11 @@ const requestListener = (req, res) => {
           res.statusCode = 404;
           return res.end(`user doesn't exist`);
         } catch (error: any) {
-          res.statusCode = 400;
+          res.statusCode = 500;
           return res.end(`error: ${error.message}`);
         }
       });
-  }
-  if (method === "DELETE" && segmented_pathname[1] === "api" && segmented_pathname[2] === "users" && !!segmented_pathname[3]) {
+  } else if (method === "DELETE" && segmented_pathname[1] === "api" && segmented_pathname[2] === "users" && !!segmented_pathname[3]) {
     const checkedId = userService.validateId(segmented_pathname[3]);
     if (checkedId === "invalid") {
       res.statusCode = 400;
@@ -123,6 +131,9 @@ const requestListener = (req, res) => {
 
     res.statusCode = 404;
     return res.end(`user doesn't exist`);
+  } else {
+    res.statusCode = 404;
+    return res.end(`Route not found`);
   }
 };
 
@@ -131,3 +142,4 @@ server.on("request", requestListener);
 server.listen(PORT, () => {
   console.log(`Server is running on ${PORT} port`);
 });
+export { server };
