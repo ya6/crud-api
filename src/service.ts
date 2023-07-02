@@ -22,6 +22,26 @@ export class UserService {
     this.users.push(newUser);
     return newUser;
   }
+  updateUser(id, userDto) {
+    const userID = this.users.findIndex((el) => el.id === id);
+    if (userID === -1) {
+      return;
+    }
+
+    this.users[userID] = { id: this.users[userID].id, ...userDto };
+    return this.users[userID];
+  }
+
+  deleteUser(id: string) {
+    const userID = this.users.findIndex((el) => el.id === id);
+    if (userID === -1) {
+      return;
+    }
+    this.users.filter((el) => el.id !== id);
+    return true;
+  }
+
+  // helpers
   validateUserDto(userdto) {
     const { username, age, hobbies } = userdto;
 
@@ -37,7 +57,6 @@ export class UserService {
     }
     return validateErrors;
   }
-  // helpers
   validateId(id: string) {
     const checkedId = validate(id) ? id : "invalid";
     return checkedId;

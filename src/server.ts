@@ -13,8 +13,6 @@ const requestListener = (req, res) => {
     segmented_pathname = URL.pathname.split("/");
   }
 
-  // console.log(URL);
-  // console.log(http.STATUS_CODES[404]);
   // get /
   if (method === "GET" && URL.pathname === "/") {
     res.statusCode = 200;
@@ -40,8 +38,7 @@ const requestListener = (req, res) => {
       return res.end(`invalid ID`);
     }
     const user = userService.getUserById(checkedId);
-    console.log(checkedId);
-    console.log(user);
+
     if (user) {
       res.statusCode = 200;
       return res.end(JSON.stringify(user));
@@ -65,7 +62,7 @@ const requestListener = (req, res) => {
             res.statusCode = 400;
             return res.end(JSON.stringify(validatedErrors));
           }
-          
+
           // create user
           const user = userService.createUser(userDto);
           res.statusCode = 201;
@@ -75,6 +72,57 @@ const requestListener = (req, res) => {
           return res.end(`error: ${error.message}`);
         }
       });
+  }
+  if (method === "PUT" && segmented_pathname[1] === "api" && segmented_pathname[2] === "users" && !!segmented_pathname[3]) {
+    let body: any[] = [];
+    req
+      .on("data", (chank) => {
+        body.push(chank);
+      })
+      .on("end", () => {
+        try {
+          const userDto = userService.parseToJson(body);
+          const validatedErrors = userService.validateUserDto(userDto);
+
+          if (validatedErrors.length > 0) {
+            res.statusCode = 400;
+            return res.end(JSON.stringify(validatedErrors));
+          }
+          // check id
+          const checkedId = userService.validateId(segmented_pathname[3]);
+          if (checkedId === "invalid") {
+            res.statusCode = 400;
+            return res.end(`invalid ID`);
+          }
+          // update user
+          const user = userService.updateUser(checkedId, userDto);
+          if (user) {
+            res.statusCode = 200;
+            return res.end(JSON.stringify(user));
+          }
+          res.statusCode = 404;
+          return res.end(`user doesn't exist`);
+        } catch (error: any) {
+          res.statusCode = 400;
+          return res.end(`error: ${error.message}`);
+        }
+      });
+  }
+  if (method === "DELETE" && segmented_pathname[1] === "api" && segmented_pathname[2] === "users" && !!segmented_pathname[3]) {
+    const checkedId = userService.validateId(segmented_pathname[3]);
+    if (checkedId === "invalid") {
+      res.statusCode = 400;
+      return res.end(`invalid ID`);
+    }
+    // del user
+    const result = userService.deleteUser(checkedId);
+    if (result) {
+      res.statusCode = 204;
+      return res.end();
+    }
+
+    res.statusCode = 404;
+    return res.end(`user doesn't exist`);
   }
 };
 
