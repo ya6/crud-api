@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "start:dev": "nodemon --exec ts-node index",
-    "prestart:prod": "npx tsc",
+    "prestart:prod": "npx tsc -p tsconfig.json",
     "start:prod": "node build/index"
   },
   "keywords": [],

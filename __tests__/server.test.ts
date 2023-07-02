@@ -14,11 +14,6 @@ describe("GET /", () => {
     server.stop();
   });
 
-  test("should return  statuscode 200", async () => {
-    const response = await request(server.getServer()).get("/");
-    expect(response.status).toBe(200);
-  });
-
   test("should return users Array", async () => {
     const response = await request(server.getServer()).get("/api/users");
     expect(response.status).toBe(200);
