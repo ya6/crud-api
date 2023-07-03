@@ -4,11 +4,12 @@ import { v4 as uuidv4, validate } from "uuid";
 type User = { id: string; usename: string; age: number; hobbies: string[] };
 
 export class UserService {
-  users: User[] = [
-    { id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d", usename: "Alex", age: 45, hobbies: ["dev", "travel"] },
-    { id: "1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed", usename: "Yan", age: 1, hobbies: [] },
-  ];
+  users: User[] = [];
   // private constructor() {}
+
+  setUsers(users) {
+    this.users = users;
+  }
 
   getAllUsers() {
     return this.users;
@@ -22,6 +23,7 @@ export class UserService {
   createUser(userDto) {
     const newUser = { id: uuidv4(), ...userDto };
     this.users.push(newUser);
+    process.send(this.users);
     return newUser;
   }
   updateUser(id, userDto) {
@@ -31,6 +33,7 @@ export class UserService {
     }
 
     this.users[userID] = { id: this.users[userID].id, ...userDto };
+    process.send(this.users);
     return this.users[userID];
   }
 
@@ -39,7 +42,8 @@ export class UserService {
     if (userID === -1) {
       return;
     }
-    this.users.filter((el) => el.id !== id);
+    this.users = this.users.filter((el) => el.id !== id);
+    process.send(this.users);
     return true;
   }
 

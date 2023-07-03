@@ -1,19 +1,24 @@
 import http from "http";
 import { parse } from "url";
-import { UserService } from "./service";
+import { UserService1 } from "./service1";
 import "dotenv/config";
 
-export class Server {
+export class Server1 {
   private port: number;
   private server;
-  private userService: UserService;
-  constructor(port: number, UserService) {
+  private userService: UserService1;
+  private db;
+  constructor(port: number, UserService1) {
     this.port = port;
-    this.userService = UserService;
+    this.userService = new UserService1();
     this.server = http.createServer();
+    this.userService.setUsers([
+      { id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d", usename: "Alex", age: 45, hobbies: ["dev", "travel"] },
+      { id: "1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed", usename: "Yan", age: 1, hobbies: [] },
+    ]);
   }
 
-  requestListener(req, res) {
+  requestListener(req, res, userService, db) {
     const { method, url } = req;
     const URL = parse(url, true);
     let segmented_pathname: string[] = [];
@@ -52,12 +57,12 @@ export class Server {
     }
     // get/api/users/id
     else if (method === "GET" && segmented_pathname[1] === "api" && segmented_pathname[2] === "users" && !!segmented_pathname[3]) {
-      const checkedId = UserService.validateId(segmented_pathname[3]);
+      const checkedId = userService.validateId(segmented_pathname[3]);
       if (checkedId === "invalid") {
         res.statusCode = 400;
         return res.end(`invalid ID`);
       }
-      const user = UserService.getUserById(checkedId);
+      const user = userService.getUserById(checkedId);
 
       if (user) {
         res.statusCode = 200;
@@ -74,8 +79,8 @@ export class Server {
         })
         .on("end", () => {
           try {
-            const userDto = UserService.parseToJson(body);
-            const validatedErrors = UserService.validateUserDto(userDto);
+            const userDto = userService.parseToJson(body);
+            const validatedErrors = userService.validateUserDto(userDto);
 
             if (validatedErrors.length > 0) {
               res.statusCode = 400;
@@ -83,7 +88,7 @@ export class Server {
             }
 
             // create user
-            const user = UserService.createUser(userDto);
+            const user = userService.createUser(userDto);
             res.setHeader("content-type", "application/json");
             res.statusCode = 201;
             return res.end(JSON.stringify(user));
@@ -100,21 +105,21 @@ export class Server {
         })
         .on("end", () => {
           try {
-            const userDto = UserService.parseToJson(body);
-            const validatedErrors = UserService.validateUserDto(userDto);
+            const userDto = userService.parseToJson(body);
+            const validatedErrors = userService.validateUserDto(userDto);
 
             if (validatedErrors.length > 0) {
               res.statusCode = 400;
               return res.end(JSON.stringify(validatedErrors));
             }
             // check id
-            const checkedId = UserService.validateId(segmented_pathname[3]);
+            const checkedId = userService.validateId(segmented_pathname[3]);
             if (checkedId === "invalid") {
               res.statusCode = 400;
               return res.end(`invalid ID`);
             }
             // update user
-            const user = UserService.updateUser(checkedId, userDto);
+            const user = userService.updateUser(checkedId, userDto);
             if (user) {
               res.statusCode = 200;
               res.setHeader("content-type", "application/json");
@@ -128,13 +133,13 @@ export class Server {
           }
         });
     } else if (method === "DELETE" && segmented_pathname[1] === "api" && segmented_pathname[2] === "users" && !!segmented_pathname[3]) {
-      const checkedId = UserService.validateId(segmented_pathname[3]);
+      const checkedId = userService.validateId(segmented_pathname[3]);
       if (checkedId === "invalid") {
         res.statusCode = 400;
         return res.end(`invalid ID`);
       }
       // del user
-      const result = UserService.deleteUser(checkedId);
+      const result = userService.deleteUser(checkedId);
       if (result) {
         res.statusCode = 204;
         return res.end();
@@ -149,7 +154,9 @@ export class Server {
   }
 
   start() {
-    this.server.on("request", this.requestListener);
+    this.server.on("request", (req, res) => {
+      this.requestListener(req, res, this.userService, this.db);
+    });
     this.server.listen(this.port, () => {
       console.log(`Server is running on ${this.port} port`);
     });

@@ -1,12 +1,12 @@
 import request from "supertest";
-import { Server } from "../src/server";
-import { UserService } from "../src/service";
+import { Server1 } from "../src/server1";
+import { UserService1 } from "../src/service1";
 
-describe("GET /", () => {
+describe("server test Suite", () => {
   let server;
 
   beforeAll(() => {
-    server = new Server(5555, UserService);
+    server = new Server1(5555, UserService1);
     server.start();
   });
 

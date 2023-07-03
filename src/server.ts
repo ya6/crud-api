@@ -7,13 +7,15 @@ export class Server {
   private port: number;
   private server;
   private userService;
+  private db;
   constructor(port: number, UserService) {
     this.port = port;
     this.userService = new UserService();
     this.server = http.createServer();
   }
 
-  requestListener(req, res, userService) {
+  requestListener(req, res, userService, db) {
+    userService.setUsers(db.users);
     const { method, url } = req;
     const URL = parse(url, true);
     let segmented_pathname: string[] = [];
@@ -150,10 +152,15 @@ export class Server {
 
   start() {
     this.server.on("request", (req, res) => {
-      this.requestListener(req, res, this.userService);
+      this.requestListener(req, res, this.userService, this.db);
     });
     this.server.listen(this.port, () => {
       console.log(`Server is running on ${this.port} port`);
+    });
+
+    process.on("message", (db) => {
+      // console.log(db);
+      this.db = db;
     });
   }
 
