@@ -4,47 +4,47 @@ import { v4 as uuidv4, validate } from "uuid";
 type User = { id: string; usename: string; age: number; hobbies: string[] };
 
 export class UserService {
-  users: User[] = [
+  static users: User[] = [
     { id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d", usename: "Alex", age: 45, hobbies: ["dev", "travel"] },
     { id: "1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed", usename: "Yan", age: 1, hobbies: [] },
   ];
   // private constructor() {}
 
-  getAllUsers() {
-    return this.users;
+  static getAllUsers() {
+    return UserService.users;
   }
 
-  getUserById(id: string) {
-    const user = this.users.find((el) => el.id === id);
+  static getUserById(id: string) {
+    const user = UserService.users.find((el) => el.id === id);
     return user;
   }
 
-  createUser(userDto) {
+  static createUser(userDto) {
     const newUser = { id: uuidv4(), ...userDto };
-    this.users.push(newUser);
+    UserService.users.push(newUser);
     return newUser;
   }
-  updateUser(id, userDto) {
-    const userID = this.users.findIndex((el) => el.id === id);
+  static updateUser(id, userDto) {
+    const userID = UserService.users.findIndex((el) => el.id === id);
     if (userID === -1) {
       return;
     }
 
-    this.users[userID] = { id: this.users[userID].id, ...userDto };
-    return this.users[userID];
+    UserService.users[userID] = { id: UserService.users[userID].id, ...userDto };
+    return UserService.users[userID];
   }
 
-  deleteUser(id: string) {
-    const userID = this.users.findIndex((el) => el.id === id);
+  static deleteUser(id: string) {
+    const userID = UserService.users.findIndex((el) => el.id === id);
     if (userID === -1) {
       return;
     }
-    this.users.filter((el) => el.id !== id);
+    UserService.users.filter((el) => el.id !== id);
     return true;
   }
 
   // helpers
-  validateUserDto(userdto) {
+  static validateUserDto(userdto) {
     const { username, age, hobbies } = userdto;
 
     const validateErrors: string[] = [];
@@ -59,12 +59,11 @@ export class UserService {
     }
     return validateErrors;
   }
-
-  validateId(id: string) {
+  static validateId(id: string) {
     const checkedId = validate(id) ? id : "invalid";
     return checkedId;
   }
-  parseToJson(body: any[]) {
+  static parseToJson(body: any[]) {
     const bufferToString = Buffer.concat(body).toString("utf-8");
     const parsedJson = JSON.parse(bufferToString);
     return parsedJson;
